@@ -1,0 +1,24 @@
+ESOP 07 Termination Analysis Tool 
+--------------------------------------------
+
+Source of the tool is in termination-tool. The analysis is based on CIL. 
+This version has been cleaned up and now works with CIL 1.40 and OCaml 3.12. 
+
+The tool requires Rankfinder and Simplify:
+
+Rankfinder: http://www7.in.tum.de/~rybal/rankfinder/
+
+Simplify: http://www.kindsoftware.com/products/opensource/Simplify/
+
+Steps to run the analyser:
+
+1. First change the location of rankfinder and Simplify binaries in termination-tool/config.ml
+   Its easier to hardcode the path rather than using relative paths. 
+2. Now go into cil directory and run ./configure && make
+3. This should build a binary called cil/bin/cilly
+
+4. To run the analysis: 
+   cil/bin/cilly --doterminationanalysis file1.c
+
+
+
