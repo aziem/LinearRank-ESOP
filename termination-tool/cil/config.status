@@ -445,7 +445,7 @@ Copyright (C) 2010 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/aziem/work/qm/esop-tool/cil'
+ac_pwd='/home/aziem/work/projects/LinearRank-ESOP/termination-tool/cil'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 test -n "$AWK" || AWK=awk
@@ -637,7 +637,7 @@ S["CIL_VERSION_MAJOR"]="1"
 S["DEFAULT_CIL_MODE"]="GNUCC"
 S["DEFAULT_COMPILER"]="_GNUCC"
 S["HAS_MSVC"]="no"
-S["CILHOME"]="/home/aziem/work/qm/esop-tool/cil"
+S["CILHOME"]="/home/aziem/work/projects/LinearRank-ESOP/termination-tool/cil"
 S["FLEXLINK"]=""
 S["MINGW"]=""
 S["ARCHOS"]="x86_LINUX"

@@ -94,3 +94,8 @@ let _simplify_run str =
 let simplify pi = 
 	let b = _simplify_run (_pure_to_simplify pi) in b
 
+let mk_context ctx = 
+  let ctx = Z3.mk_context_x (Array.append [|("MODEL", "true")|] ctx) in
+  (* You may comment out the following line to disable tracing: *)
+  (* Z3.trace_to_stderr ctx; *)
+  ctx;;

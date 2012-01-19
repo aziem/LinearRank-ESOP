@@ -33,7 +33,7 @@ config.status: configure
 configure: configure.in aclocal.m4
 	autoconf
 
-@DEFAULT_COMPILER@=1
+_GNUCC=1
 
 
 
@@ -43,19 +43,19 @@ ifdef RELEASE
 endif
 
 ifndef ARCHOS
-   ARCHOS=@ARCHOS@
+   ARCHOS=x86_LINUX
 endif
 
 ifndef MINGW
-   MINGW=@MINGW@
+   MINGW=
 endif
 
 ifndef FLEXLINK
-   FLEXLINK=@FLEXLINK@
+   FLEXLINK=
 endif
 
 ifndef EMUL
-   EMUL=@EMUL@
+   EMUL=
 endif
 ifdef EMUL
 	 # Compile machdep-ml.c with -static when
@@ -81,7 +81,7 @@ ifdef USE_LLVM
   CILLY_FEATURES += llvmutils llvmgen llvmssa llvm
 endif
 # Add the EXTRAFEATURES
-CILLY_FEATURES += @EXTRAFEATURES@
+CILLY_FEATURES += 
 
     # Now rules to make cilly
 CILLY_LIBRARY_MODULES = pretty inthash errormsg alpha trace stats util clist \
@@ -103,10 +103,10 @@ CILLY_LIBRARY_MODULES = pretty inthash errormsg alpha trace stats util clist \
 # ww: we don't want "main" in an external cil library (cil.cma),
 # otherwise every program that links against that library will get
 # main's argument checking and whatnot ...
-CILLY_MODULES = $(CILLY_LIBRARY_MODULES) config error ident sil prop simplify simp prover propset rankfinder symExec abs trans dotty analysis main
+CILLY_MODULES = $(CILLY_LIBRARY_MODULES) main
 CILLY_LIBS     = unix str nums
 
-SOURCEDIRS  += src src/frontc src/ext src/ext/pta ocamlutil ../termination-tool @EXTRASRCDIRS@
+SOURCEDIRS  += src src/frontc src/ext src/ext/pta ocamlutil  
 MLLS        += clexer.mll formatlex.mll
 MLYS        += cparser.mly formatparse.mly
 MODULES     += $(CILLY_MODULES)
@@ -256,7 +256,7 @@ endif
 # Now the extra features, with the first letter capitalized
 	echo " (* EXTRAFEATURES: *)" >> $@  
 	echo \
-          $(foreach f,@EXTRAFEATURES@, \
+          $(foreach f,, \
              "\n   "`echo $f | cut -c 1 | tr "[a-z]" "[A-Z]"``echo $f | cut -c 2-`".feature;") \
 	| perl -pe 's/\\n/\n/g' >> $@
 	echo "]"   >>$@ 
@@ -304,7 +304,7 @@ odoc: $(OBJDIR)/pretty.cmi $(OBJDIR)/cil.cmi
 	-rm -f doc/ocamldoc.sty
 	ocamldoc -d doc/html/cil/api -v -stars \
              -html \
-             -t "CIL API Documentation (version @CIL_VERSION@)" \
+             -t "CIL API Documentation (version 1.4.0)" \
 	     -I $(OBJDIR) -hide Pervasives $(ODOC_FILES)
 
 doc/cilpp.tex: doc/cilcode.pl doc/cil.tex lib/Cilly.pm
@@ -317,7 +317,7 @@ doc/cilpp.tex: doc/cilcode.pl doc/cil.tex lib/Cilly.pm
 # Documentation generated from latex files using "hevea"
 texdoc: doc/cilpp.tex
 # Create the version document
-	cd doc/html/cil; echo "\def\cilversion{@CIL_VERSION@}" >cil.version.tex
+	cd doc/html/cil; echo "\def\cilversion{1.4.0}" >cil.version.tex
 	cd doc/html/cil; echo "\def\ccuredversion{@CCURED_VERSION@}" >>cil.version.tex
 	cd doc/html/cil; hevea -exec xxdate.exe ../../cilpp
 	cd doc/html/cil; hevea -exec xxdate.exe ../../cilpp
@@ -327,13 +327,13 @@ texdoc: doc/cilpp.tex
 	cp -f doc/header.html doc/html/cil
 
 pdfdoc: doc/cilpp.tex $(OBJDIR)/pretty.cmi $(OBJDIR)/cil.cmi
-	cd doc; echo "\def\cilversion{@CIL_VERSION@}" >cil.version.tex
+	cd doc; echo "\def\cilversion{1.4.0}" >cil.version.tex
 	cd doc; echo "\def\ccuredversion{@CCURED_VERSION@}" >>cil.version.tex
 	cd doc; pdflatex cilpp.tex; pdflatex cilpp.tex
 	cd doc; mv cilpp.pdf html/cil/CIL.pdf
 	ocamldoc -o doc/cil-api.tex.tmp -v -stars \
              -latex \
-             -t "CIL API Documentation (version @CIL_VERSION@)" \
+             -t "CIL API Documentation (version 1.4.0)" \
 	     -I $(OBJDIR) -hide Pervasives $(ODOC_FILES)
 	sed -e 's/\\usepackage\[T1\]{fontenc}/\\setlength{\\pdfpagewidth}{\\paperwidth} \\setlength{\\pdfpageheight}{\\paperheight}/' doc/cil-api.tex.tmp >doc/cil-api.tex
 	rm doc/cil-api.tex.tmp
@@ -394,17 +394,17 @@ check: quicktest
 ########################################################################
 
 
-INSTALL = @INSTALL@
-INSTALL_DATA = @INSTALL_DATA@
+INSTALL = /usr/bin/install -c
+INSTALL_DATA = ${INSTALL} -m 644
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-datarootdir = @datarootdir@
-libdir = @libdir@
+prefix = /usr/local
+exec_prefix = ${prefix}
+datarootdir = ${prefix}/share
+libdir = ${exec_prefix}/lib
 pkglibdir = $(libdir)/cil
-libexecdir = @libexecdir@
+libexecdir = ${exec_prefix}/libexec
 pkglibexecdir = $(libexecdir)/cil
-bindir = @bindir@
+bindir = ${exec_prefix}/bin
 # Hack - I don't know how to find perl_vendorlib
 perl_vendorlib = $(libdir)
 

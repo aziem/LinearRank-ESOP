@@ -1,0 +1,4 @@
+Download Z3 from MSR and unpack the directory here. 
+Build Z3 as instructed.
+
+The Makefile here will build the analyser with both CIL and Z3 libs.

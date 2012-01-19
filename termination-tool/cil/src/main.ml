@@ -104,7 +104,6 @@ let features : C.featureDescr list =
     Logcalls.feature;
     Ptranal.feature;
     Liveness.feature;
-    Analysis.feature;
   ] 
   @ Feature_config.features 
 
