@@ -1,14 +1,16 @@
-ESOP 07 Termination Analysis Tool 
+ESOP 08 Termination Analysis Tool 
 --------------------------------------------
 
 Source of the tool is in termination-tool. The analysis is based on CIL. 
 This version has been cleaned up and now works with CIL 1.40 and OCaml 3.12. 
 
-The tool requires Rankfinder and Simplify:
+The tool requires Rankfinder and Simplify and Z3:
 
 Rankfinder: http://www7.in.tum.de/~rybal/rankfinder/
 
 Simplify: http://www.kindsoftware.com/products/opensource/Simplify/
+
+Z3: http://research.microsoft.com/projects/z3
 
 Steps to run the analyser:
 
