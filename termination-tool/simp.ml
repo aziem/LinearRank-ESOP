@@ -94,3 +94,28 @@ let _simplify_run str =
 let simplify pi = 
 	let b = _simplify_run (_pure_to_simplify pi) in b
 
+
+
+let _z3_run str = 
+	let oc = open_out "simplify.in" in 
+	(*print_string ("SIMP INPUT " ^ str ^ "\n");*)
+	Printf.fprintf oc "%s" str;
+	ignore (close_out oc);
+	(* -nosc means only answer is printed rather than counterexample + ans *)
+	(*print_string "CALLING SIMPLIFY\n";
+	print_string str;*)
+	let ic = Unix.open_process_in (!Config.z3_file ^ " -s simplify.in")
+	in 
+	let size_in = input ic simplify_buffer 0 1000 in 
+	let str_in = String.sub simplify_buffer 0 size_in in 
+	let validregexp = Str.regexp "Valid" in 
+	try 
+		ignore(Unix.close_process_in ic); 
+		ignore (Str.search_forward validregexp str_in 0);
+		true
+	with 
+		| Not_found -> false
+
+
+let z3 pi = 
+  let b = _z3_run (_pure_to_simplify pi) in b

@@ -629,7 +629,7 @@ let feature : featureDescr =
 	"--rankfinder", Arg.Int (fun n -> Config.rankfinder := n), 
         "the control for calling the rankfinder (default = 2:  use Int first and Rat next)";
 	"--prover", Arg.Int (fun n -> Config.prover := n), 
-        "the power of the prover. (default = 1: use both sil prover and Simplify)";];
+        "the power of the prover. (default = 2: use Z3.  )";];
     fd_doit = 
       (function (f: file) -> 
 	print_string (f.fileName);

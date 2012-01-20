@@ -71,11 +71,13 @@ let check_inconsistency_base prop =
 	| Const_int n, Const_int m -> n>m
 	| _ -> false)
     in 
-    if (!Config.prover >= 1) then 
+    if (!Config.prover = 1) then 
         inconsistent_ptsto () || inconsistent_two_hpreds () || (simplify pi) 
-    else
+    else if (!Config.prover = 0) then 
         inconsistent_ptsto () || inconsistent_two_hpreds () || List.exists inconsistent_atom pi 
-
+    else if (!Config.prover = 2)  then
+        inconsistent_ptsto () || inconsistent_two_hpreds () || (z3 pi) 
+    else false
 (** Inconsistency checking. *)
 let check_inconsistency prop =
   check_inconsistency_base prop 
