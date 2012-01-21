@@ -148,7 +148,12 @@ module StmtData = struct
   let tbl_loop : t IH.t = IH.create 100
 
   let tbl_obs : t IH.t = IH.create 100
-	
+
+  let proven_loops = ref 0 
+  let un_proven_loops = ref 0 
+  let sid = ref [] 
+  let sidn = ref [] 
+
 	let fundec_set f = 
 			func := Some(f)
 	
@@ -222,38 +227,42 @@ module StmtData = struct
       let filter p = (Prop.prop_get_sid p = s.sid) in
       let d_sum = Propset.propset_filter filter d in
       let d_abs = Abs.lifted_abstract s.sid d_sum in
-		  let cont = Propset.propset_filter (fun p -> not(Prop.prop_is_wf p)) d_abs in 
-		  (* have a termination bug *)
-			if (Propset.propset_size cont) !=0 then 
-				begin
-					let f = match !func with 
-						| None -> assert false
-						| Some(fd) -> fd 
-					in 
-					let outputerror_graph (p:Prop.prop) = 
-							let v = Prop.prop_get_visited p in 
-							Dotty.printCfgFilename (f.svar.vname ^ (string_of_int !numbadprops) ^ ".dot") f v ;
-							numbadprops := !numbadprops + 1
-					in 
-					Propset.propset_iter outputerror_graph cont;
-					assert false
-				end
-			else
-			begin
-      	let visited = htable_retrieve tbl_done s in
-      	let todo = htable_retrieve tbl_todo s in
-      	let d_sum' = Propset.propset_diff (Propset.propset_diff d_abs visited) todo in 
+      let cont = Propset.propset_filter (fun p -> not(Prop.prop_is_wf p)) d_abs in 
+      (* have a termination bug *)
+      if (Propset.propset_size cont) !=0 then 
+	begin
+          E.log "TERMINATION BUG";
+          if (List.mem (from_s.sid, s.sid) !sidn) then () else (incr un_proven_loops; sidn := ((from_s.sid,s.sid)::!sidn));
+	  let f = match !func with 
+	    | None -> assert false
+	    | Some(fd) -> fd 
+	  in 
+	  let outputerror_graph (p:Prop.prop) = 
+	    let v = Prop.prop_get_visited p in 
+	    Dotty.printCfgFilename (f.svar.vname ^ (string_of_int !numbadprops) ^ ".dot") f v ;
+	    numbadprops := !numbadprops + 1
+	  in 
+	  Propset.propset_iter outputerror_graph cont;
+          false
+	end
+      else
+	begin
+          E.log "TERMINATION PROVEN?";
+          if (List.mem (from_s.sid, s.sid) !sid) then () else (incr proven_loops; sid := ((from_s.sid,s.sid)::!sid));
+      	  let visited = htable_retrieve tbl_done s in
+      	  let todo = htable_retrieve tbl_todo s in
+      	  let d_sum' = Propset.propset_diff (Propset.propset_diff d_abs visited) todo in 
       	(*let d_sum'' = Propset.propset_map (add_visited_sid s.sid) d_sum'' in*)
-      	let todo' = Propset.propset_union d_sum' todo  
-      	in 
-					E.log "@.#### [STATEMEMT from %d to %d] (loop_cont,back)" from_s.sid s.sid; 
-        	ignore(Pretty.printf "St from: %a\n" d_stmt from_s);
-        	ignore(Pretty.printf "St to: %a\n" d_stmt s);
-        	update_print_stat visited todo d_sum d_sum';
-					htable_replace tbl_todo s todo';
-					register_loop s d_sum';
-					Propset.propset_is_empty todo'
-			end
+      	  let todo' = Propset.propset_union d_sum' todo  
+      	  in 
+	  E.log "@.#### [STATEMEMT from %d to %d] (loop_cont,back)" from_s.sid s.sid; 
+          ignore(Pretty.printf "St from: %a\n" d_stmt from_s);
+          ignore(Pretty.printf "St to: %a\n" d_stmt s);
+          update_print_stat visited todo d_sum d_sum';
+	  htable_replace tbl_todo s todo';
+	  register_loop s d_sum';
+	  Propset.propset_is_empty todo'
+	end
     in
     let do_loop_noback _ = 
       let filter p = (Prop.prop_get_sid p = s.sid) in
@@ -523,20 +532,20 @@ let compute_variants (f: fundec) : unit =
 	StmtData.reset ();
 	List.iter handle_loop loop_conts
     in    
-      f_CFG ();
-			StmtData.fundec_set f;
-      Dotty.printCfgFilename (f.svar.vname ^ ".dot") f [];
-      f_Loop ();
-      f_workset ();
-      f_StmtData ()
+    f_CFG ();
+    StmtData.fundec_set f;
+    Dotty.printCfgFilename (f.svar.vname ^ ".dot") f [];
+    f_Loop ();
+    f_workset ();
+    f_StmtData ()
   in 
 
   let execute _ = 
       try
-				doAnalysis ();
-				E.err "@.#### [FUNCTION %s] ...OK #####@." f.svar.vname
+	doAnalysis ();
+	E.err "@.#### [FUNCTION %s] ...OK #####@." f.svar.vname
       with 
-				| _ -> (E.err "@.#### [FUNCTION %s] ...ERROR ####@." f.svar.vname; assert false)
+	| _ -> (E.err "@.#### [FUNCTION %s] ...ERROR ####@." f.svar.vname; assert false)
   in
 
   let collect_print_results _ = 
@@ -574,11 +583,29 @@ let compute_variants (f: fundec) : unit =
             initialize ();
             execute ();
             E.err "@.#### [FUNCTION %s] ... Analysis Finished ####@." f.svar.vname;
+            E.err "Loops Proven %d\n" !StmtData.proven_loops;
+            E.err "Proven Loops Locs: \n";
+            List.iter (fun (f,t) -> E.err "Loop From: %d To: %d\n" f t) !StmtData.sid;
+            
+            E.err "Loops Not Proven %d\n" !StmtData.un_proven_loops;
+            E.err "Not Proven Loops Locs: \n";
+            List.iter (fun (f,t) -> E.err "Loop From: %d To: %d\n" f t) !StmtData.sidn;
+            
             collect_print_results ();
+
+
+
 	    E.err "@.#### Termination Proved ####@.";
             print_string "\nTERMINATION PROVED\n"
           with _ ->
 	    E.err "@.#### Failed to Prove Termination ####@.";
+            E.err "Loops Proven %d\n" !StmtData.proven_loops;
+            E.err "Proven Loops Locs: \n";
+            List.iter (fun (f,t) -> E.err "Loop From: %d To: %d\n" f t) !StmtData.sid;
+            
+            E.err "Loops Not Proven %d\n" !StmtData.un_proven_loops;
+            E.err "Not Proven Loops Locs: \n";
+            List.iter (fun (f,t) -> E.err "Loop From: %d To: %d\n" f t) !StmtData.sidn;
             print_string "\nFAILED TO PROVE TERMINATION\n\n"
 
 
